@@ -11,5 +11,14 @@
     "url": "pitang-booster-2025.2"
   },
   "author": "Matheus Soares",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@types/express": "^5.0.4"
+  },
+  "dependencies": {
+    "@nestjs/platform-express": "^11.1.7",
+    "@types/uuid": "^11.0.0",
+    "uuid": "^13.0.0"
+  }
 }
