@@ -1,9 +1,14 @@
 {
   "name": "pitang-booster-2025.2",
   "version": "1.0.0",
-  "description": "��#\u0000 \u0000p\u0000i\u0000t\u0000a\u0000n\u0000g\u0000-\u0000b\u0000o\u0000o\u0000s\u0000t\u0000e\u0000r\u0000-\u00002\u00000\u00002\u00005\u0000.\u00002\u0000\r\u0000 \u0000",
+  "description": "projeto para desenvolvimento do pitang-booster. Módulos 3 e 4.",
   "main": "index.js",
   "scripts": {
+    "start": "node dist/main.js",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main.js",
+    "build": "nest build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -14,11 +19,17 @@
   "license": "ISC",
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
-    "@types/express": "^5.0.4"
+    "@types/express": "^5.0.4",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@nestjs/common": "^11.1.7",
+    "@nestjs/core": "^11.1.7",
     "@nestjs/platform-express": "^11.1.7",
     "@types/uuid": "^11.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.1",
     "uuid": "^13.0.0"
   }
 }
