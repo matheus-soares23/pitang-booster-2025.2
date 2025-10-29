@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ContaBancaria } from '../entities/conta-bancaria.entity';
+import { ContaCorrente } from '../entities/conta-corrente.entity';
+import { ContaPoupanca } from '../entities/conta-poupanca.entity';
+import { BankAccountUtils } from '../utils/bankAccountUtils';
 
 @Injectable()
 export class BankService {
@@ -7,49 +10,65 @@ export class BankService {
 
   constructor() {
     this.contas.push(
-      new ContaBancaria(
-        this.generateId(),
-        '12345-6',
-        'João Silva',
-        1000.50,
-        'corrente'
-      ),
-      new ContaBancaria(
-        this.generateId(),
-        '78901-2',
-        'Maria Santos',
-        2500.75,
-        'poupanca'
-      )
+      new ContaCorrente('12345-6', 'João Silva', 1000.50, 1000),
+      new ContaPoupanca('78901-2', 'Maria Santos', 2500.75, 0.005)
     );
   }
 
-  private generateId(): string {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
-  }
-
-  listarContas(): ContaBancaria[] {
+  getContas(): ContaBancaria[] {
     return this.contas;
   }
 
-  buscarContaPorId(id: string): ContaBancaria | undefined {
-    return this.contas.find(conta => conta.id === id);
+  getContaPorNumero(numero: string): ContaBancaria | undefined {
+    return this.contas.find(conta => conta.numero === numero);
   }
 
-  criarConta(numero: string, titular: string, tipo: 'corrente' | 'poupanca' = 'corrente'): ContaBancaria {
-    const novaConta = new ContaBancaria(
-      this.generateId(),
-      numero,
-      titular,
-      0,
-      tipo
-    );
+  criarContaCorrente(titular: string, saldoInicial: number = 0, limiteChequeEspecial: number = 500): ContaCorrente {
+    const numero = BankAccountUtils.gerarNumeroConta();
+    if (!BankAccountUtils.isNumeroContaUnico(numero, this.contas)) {
+      throw new Error('Número de conta já existe');
+    }
+    
+    const novaConta = new ContaCorrente(numero, titular, saldoInicial, limiteChequeEspecial);
     this.contas.push(novaConta);
     return novaConta;
   }
 
-  consultarSaldo(id: string): number | null {
-    const conta = this.buscarContaPorId(id);
+  criarContaPoupanca(titular: string, saldoInicial: number = 0, taxaRendimento: number = 0.005): ContaPoupanca {
+    const numero = BankAccountUtils.gerarNumeroConta();
+    if (!BankAccountUtils.isNumeroContaUnico(numero, this.contas)) {
+      throw new Error('Número de conta já existe');
+    }
+    
+    const novaConta = new ContaPoupanca(numero, titular, saldoInicial, taxaRendimento);
+    this.contas.push(novaConta);
+    return novaConta;
+  }
+
+  getSaldo(numero: string): number | null {
+    const conta = this.getContaPorNumero(numero);
     return conta ? conta.saldo : null;
+  }
+
+  depositar(numero: string, valor: number): boolean {
+    const conta = this.getContaPorNumero(numero);
+    
+    if (!BankAccountUtils.podeDepositar(conta, valor)) {
+      return false;
+    }
+    
+    conta.saldo += valor;
+    return true;
+  }
+
+  sacar(numero: string, valor: number): boolean {
+    const conta = this.getContaPorNumero(numero);
+    
+    if (!BankAccountUtils.isContaValida(conta) || !BankAccountUtils.podeSacar(conta, valor)) {
+      return false;
+    }
+    
+    conta.saldo -= valor;
+    return true;
   }
 }
