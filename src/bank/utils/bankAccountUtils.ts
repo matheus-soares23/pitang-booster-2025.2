@@ -1,5 +1,4 @@
 import { ContaBancaria } from '../entities/conta-bancaria.entity';
-import { ContaCorrente } from '../entities/conta-corrente.entity';
 
 export class BankAccountUtils {
     
@@ -9,30 +8,6 @@ export class BankAccountUtils {
 
   static isContaValida(conta: ContaBancaria | undefined): conta is ContaBancaria {
     return conta !== undefined && conta !== null;
-  }
-
-  static isContaCorrente(conta: ContaBancaria): conta is ContaCorrente {
-    return conta instanceof ContaCorrente;
-  }
-
-  static getSaldoDisponivelParaSaque(conta: ContaBancaria): number {
-    if (this.isContaCorrente(conta)) {
-      return conta.getSaldoDisponivel();
-    }
-    return conta.saldo;
-  }
-
-  static podeSacar(conta: ContaBancaria, valor: number): boolean {
-    if (!this.isValorValido(valor)) {
-      return false;
-    }
-    
-    const saldoDisponivel = this.getSaldoDisponivelParaSaque(conta);
-    return valor <= saldoDisponivel;
-  }
-
-  static podeDepositar(conta: ContaBancaria, valor: number): boolean {
-    return this.isContaValida(conta) && this.isValorValido(valor);
   }
 
   static gerarNumeroConta(): string {

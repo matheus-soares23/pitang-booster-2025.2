@@ -3,12 +3,13 @@ import { ContaBancaria } from '../entities/conta-bancaria.entity';
 import { ContaCorrente } from '../entities/conta-corrente.entity';
 import { ContaPoupanca } from '../entities/conta-poupanca.entity';
 import { BankAccountUtils } from '../utils/bankAccountUtils';
+import { BalanceService } from './balance.service';
 
 @Injectable()
 export class BankService {
   private contas: ContaBancaria[] = [];
 
-  constructor() {
+  constructor(private readonly balanceService: BalanceService) {
     this.contas.push(
       new ContaCorrente('12345-6', 'João Silva', 1000.50, 1000),
       new ContaPoupanca('78901-2', 'Maria Santos', 2500.75, 0.005)
@@ -53,22 +54,20 @@ export class BankService {
   depositar(numero: string, valor: number): boolean {
     const conta = this.getContaPorNumero(numero);
     
-    if (!BankAccountUtils.podeDepositar(conta, valor)) {
+    if (!conta) {
       return false;
     }
     
-    conta.saldo += valor;
-    return true;
+    return this.balanceService.realizarDeposito(conta, valor);
   }
 
   sacar(numero: string, valor: number): boolean {
     const conta = this.getContaPorNumero(numero);
     
-    if (!BankAccountUtils.isContaValida(conta) || !BankAccountUtils.podeSacar(conta, valor)) {
+    if (!conta) {
       return false;
     }
     
-    conta.saldo -= valor;
-    return true;
+    return this.balanceService.realizarSaque(conta, valor);
   }
 }
