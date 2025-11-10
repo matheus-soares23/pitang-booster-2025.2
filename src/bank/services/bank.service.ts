@@ -111,4 +111,128 @@ export class BankService {
 
     return this.balanceService.realizarSaque(conta, valor);
   }
+
+  atualizarContaCorrente(
+    numero: string,
+    dados: { titular?: string; limiteChequeEspecial?: number }
+  ): boolean {
+    const conta = this.getContaPorNumero(numero);
+    if (!conta || !(conta instanceof ContaCorrente)) {
+      return false;
+    }
+
+    if (dados.titular !== undefined) {
+      if (!dados.titular || dados.titular.trim() === "") {
+        return false;
+      }
+      conta.titular = dados.titular;
+    }
+
+    if (dados.limiteChequeEspecial !== undefined) {
+      if (dados.limiteChequeEspecial < 0) {
+        return false;
+      }
+      conta.limiteChequeEspecial = dados.limiteChequeEspecial;
+    }
+
+    return true;
+  }
+
+  atualizarContaPoupanca(
+    numero: string,
+    dados: { titular?: string; taxaRendimento?: number }
+  ): boolean {
+    const conta = this.getContaPorNumero(numero);
+    if (!conta || !(conta instanceof ContaPoupanca)) {
+      return false;
+    }
+
+    if (dados.titular !== undefined) {
+      if (!dados.titular || dados.titular.trim() === "") {
+        return false;
+      }
+      conta.titular = dados.titular;
+    }
+
+    if (dados.taxaRendimento !== undefined) {
+      if (dados.taxaRendimento < 0) {
+        return false;
+      }
+      conta.taxaRendimento = dados.taxaRendimento;
+    }
+
+    return true;
+  }
+
+  atualizarContaCorrentePremium(
+    numero: string,
+    dados: {
+      titular?: string;
+      limiteChequeEspecial?: number;
+      cashback?: number;
+    }
+  ): boolean {
+    const conta = this.getContaPorNumero(numero);
+    if (!conta || !(conta instanceof ContaCorrentePremium)) {
+      return false;
+    }
+
+    if (dados.titular !== undefined) {
+      if (!dados.titular || dados.titular.trim() === "") {
+        return false;
+      }
+      conta.titular = dados.titular;
+    }
+
+    if (dados.limiteChequeEspecial !== undefined) {
+      if (dados.limiteChequeEspecial < 0) {
+        return false;
+      }
+      conta.limiteChequeEspecial = dados.limiteChequeEspecial;
+    }
+
+    if (dados.cashback !== undefined) {
+      if (dados.cashback < 0) {
+        return false;
+      }
+      conta.cashback = dados.cashback;
+    }
+
+    return true;
+  }
+
+  excluirConta(numero: string): boolean {
+    const index = this.contas.findIndex((conta) => conta.numero === numero);
+    if (index === -1) {
+      return false;
+    }
+    this.contas.splice(index, 1);
+    return true;
+  }
+
+  aplicarCashback(numero: string, valorCompra: number): boolean {
+    const conta = this.getContaPorNumero(numero);
+    if (!conta || !(conta instanceof ContaCorrentePremium) || valorCompra <= 0) {
+      return false;
+    }
+    conta.aplicarCashback(valorCompra);
+    return true;
+  }
+
+  resgatarPontos(numero: string): number | null {
+    const conta = this.getContaPorNumero(numero);
+    if (!conta || !(conta instanceof ContaCorrentePremium)) {
+      return null;
+    }
+    return conta.resgatarPontos();
+  }
+
+  aplicarRendimento(numero: string): boolean {
+    const conta = this.getContaPorNumero(numero);
+    if (!conta || !(conta instanceof ContaPoupanca)) {
+      return false;
+    }
+    conta.aplicarRendimento();
+    return true;
+  }
 }
