@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { ContaBancaria } from '../entities/conta-bancaria.entity';
 import { ContaCorrente } from '../entities/conta-corrente.entity';
 import { BankAccountUtils } from '../utils/bankAccountUtils';
+import { 
+  ValorInvalidoException, 
+  SaldoInsuficienteException 
+} from '../exceptions/bank.exceptions';
 
 @Injectable()
 export class BalanceService {
@@ -26,22 +30,25 @@ export class BalanceService {
     return BankAccountUtils.isContaValida(conta) && BankAccountUtils.isValorValido(valor);
   }
 
-  realizarSaque(conta: ContaBancaria, valor: number): boolean {
-    if (!this.podeSacar(conta, valor)) {
-      return false;
+  realizarSaque(conta: ContaBancaria, valor: number): void {
+    if (!BankAccountUtils.isValorValido(valor)) {
+      throw new ValorInvalidoException(valor);
+    }
+    
+    const saldoDisponivel = this.getSaldoDisponivelParaSaque(conta);
+    if (valor > saldoDisponivel) {
+      throw new SaldoInsuficienteException(saldoDisponivel, valor);
     }
     
     conta.saldo -= valor;
-    return true;
   }
 
-  realizarDeposito(conta: ContaBancaria, valor: number): boolean {
-    if (!this.podeDepositar(conta, valor)) {
-      return false;
+  realizarDeposito(conta: ContaBancaria, valor: number): void {
+    if (!BankAccountUtils.isValorValido(valor)) {
+      throw new ValorInvalidoException(valor);
     }
     
     conta.saldo += valor;
-    return true;
   }
 
   private isContaCorrente(conta: ContaBancaria): conta is ContaCorrente {

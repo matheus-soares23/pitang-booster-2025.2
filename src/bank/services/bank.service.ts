@@ -5,6 +5,13 @@ import { ContaPoupanca } from "../entities/conta-poupanca.entity";
 import { BankAccountUtils } from "../utils/bankAccountUtils";
 import { BalanceService } from "./balance.service";
 import { ContaCorrentePremium } from "../entities/conta-corrente-premium.entity";
+import {
+  ContaJaExisteException,
+  ContaNaoEncontradaException,
+  TipoContaInvalidoException,
+  DadosInvalidosException,
+  ValorInvalidoException
+} from "../exceptions/bank.exceptions";
 
 @Injectable()
 export class BankService {
@@ -21,8 +28,12 @@ export class BankService {
     return this.contas;
   }
 
-  getContaPorNumero(numero: string): ContaBancaria | undefined {
-    return this.contas.find((conta) => conta.numero === numero);
+  getContaPorNumero(numero: string): ContaBancaria {
+    const conta = this.contas.find((conta) => conta.numero === numero);
+    if (!conta) {
+      throw new ContaNaoEncontradaException(numero);
+    }
+    return conta;
   }
 
   criarContaCorrente(
@@ -32,7 +43,7 @@ export class BankService {
   ): ContaCorrente {
     const numero = BankAccountUtils.gerarNumeroConta();
     if (!BankAccountUtils.isNumeroContaUnico(numero, this.contas)) {
-      throw new Error("Número de conta já existe");
+      throw new ContaJaExisteException(numero);
     }
 
     const novaConta = new ContaCorrente(
@@ -52,7 +63,7 @@ export class BankService {
   ): ContaPoupanca {
     const numero = BankAccountUtils.gerarNumeroConta();
     if (!BankAccountUtils.isNumeroContaUnico(numero, this.contas)) {
-      throw new Error("Número de conta já existe");
+      throw new ContaJaExisteException(numero);
     }
 
     const novaConta = new ContaPoupanca(
@@ -73,7 +84,7 @@ export class BankService {
   ): ContaCorrentePremium {
     const numero = BankAccountUtils.gerarNumeroConta();
     if (!BankAccountUtils.isNumeroContaUnico(numero, this.contas)) {
-      throw new Error("Número de conta já existe");
+      throw new ContaJaExisteException(numero);
     }
 
     const novaConta = new ContaCorrentePremium(
@@ -87,81 +98,67 @@ export class BankService {
     return novaConta;
   }
 
-  getSaldo(numero: string): number | null {
+  getSaldo(numero: string): number {
     const conta = this.getContaPorNumero(numero);
-    return conta ? conta.saldo : null;
+    return conta.saldo;
   }
 
-  depositar(numero: string, valor: number): boolean {
+  depositar(numero: string, valor: number): void {
     const conta = this.getContaPorNumero(numero);
-
-    if (!conta) {
-      return false;
-    }
-
-    return this.balanceService.realizarDeposito(conta, valor);
+    this.balanceService.realizarDeposito(conta, valor);
   }
 
-  sacar(numero: string, valor: number): boolean {
+  sacar(numero: string, valor: number): void {
     const conta = this.getContaPorNumero(numero);
-
-    if (!conta) {
-      return false;
-    }
-
-    return this.balanceService.realizarSaque(conta, valor);
+    this.balanceService.realizarSaque(conta, valor);
   }
 
   atualizarContaCorrente(
     numero: string,
     dados: { titular?: string; limiteChequeEspecial?: number }
-  ): boolean {
+  ): void {
     const conta = this.getContaPorNumero(numero);
-    if (!conta || !(conta instanceof ContaCorrente)) {
-      return false;
+    if (!(conta instanceof ContaCorrente)) {
+      throw new TipoContaInvalidoException('Conta Corrente', conta.constructor.name);
     }
 
     if (dados.titular !== undefined) {
       if (!dados.titular || dados.titular.trim() === "") {
-        return false;
+        throw new DadosInvalidosException('titular', 'não pode ser vazio');
       }
       conta.titular = dados.titular;
     }
 
     if (dados.limiteChequeEspecial !== undefined) {
       if (dados.limiteChequeEspecial < 0) {
-        return false;
+        throw new DadosInvalidosException('limiteChequeEspecial', 'deve ser maior ou igual a zero');
       }
       conta.limiteChequeEspecial = dados.limiteChequeEspecial;
     }
-
-    return true;
   }
 
   atualizarContaPoupanca(
     numero: string,
     dados: { titular?: string; taxaRendimento?: number }
-  ): boolean {
+  ): void {
     const conta = this.getContaPorNumero(numero);
-    if (!conta || !(conta instanceof ContaPoupanca)) {
-      return false;
+    if (!(conta instanceof ContaPoupanca)) {
+      throw new TipoContaInvalidoException('Conta Poupança', conta.constructor.name);
     }
 
     if (dados.titular !== undefined) {
       if (!dados.titular || dados.titular.trim() === "") {
-        return false;
+        throw new DadosInvalidosException('titular', 'não pode ser vazio');
       }
       conta.titular = dados.titular;
     }
 
     if (dados.taxaRendimento !== undefined) {
       if (dados.taxaRendimento < 0) {
-        return false;
+        throw new DadosInvalidosException('taxaRendimento', 'deve ser maior ou igual a zero');
       }
       conta.taxaRendimento = dados.taxaRendimento;
     }
-
-    return true;
   }
 
   atualizarContaCorrentePremium(
@@ -171,68 +168,66 @@ export class BankService {
       limiteChequeEspecial?: number;
       cashback?: number;
     }
-  ): boolean {
+  ): void {
     const conta = this.getContaPorNumero(numero);
-    if (!conta || !(conta instanceof ContaCorrentePremium)) {
-      return false;
+    if (!(conta instanceof ContaCorrentePremium)) {
+      throw new TipoContaInvalidoException('Conta Corrente Premium', conta.constructor.name);
     }
 
     if (dados.titular !== undefined) {
       if (!dados.titular || dados.titular.trim() === "") {
-        return false;
+        throw new DadosInvalidosException('titular', 'não pode ser vazio');
       }
       conta.titular = dados.titular;
     }
 
     if (dados.limiteChequeEspecial !== undefined) {
       if (dados.limiteChequeEspecial < 0) {
-        return false;
+        throw new DadosInvalidosException('limiteChequeEspecial', 'deve ser maior ou igual a zero');
       }
       conta.limiteChequeEspecial = dados.limiteChequeEspecial;
     }
 
     if (dados.cashback !== undefined) {
       if (dados.cashback < 0) {
-        return false;
+        throw new DadosInvalidosException('cashback', 'deve ser maior ou igual a zero');
       }
       conta.cashback = dados.cashback;
     }
-
-    return true;
   }
 
-  excluirConta(numero: string): boolean {
+  excluirConta(numero: string): void {
     const index = this.contas.findIndex((conta) => conta.numero === numero);
     if (index === -1) {
-      return false;
+      throw new ContaNaoEncontradaException(numero);
     }
     this.contas.splice(index, 1);
-    return true;
   }
 
-  aplicarCashback(numero: string, valorCompra: number): boolean {
+  aplicarCashback(numero: string, valorCompra: number): void {
     const conta = this.getContaPorNumero(numero);
-    if (!conta || !(conta instanceof ContaCorrentePremium) || valorCompra <= 0) {
-      return false;
+    if (!(conta instanceof ContaCorrentePremium)) {
+      throw new TipoContaInvalidoException('Conta Corrente Premium', conta.constructor.name);
+    }
+    if (valorCompra <= 0) {
+      throw new ValorInvalidoException(valorCompra);
     }
     conta.aplicarCashback(valorCompra);
-    return true;
   }
 
-  resgatarPontos(numero: string): number | null {
+  resgatarPontos(numero: string): number {
     const conta = this.getContaPorNumero(numero);
-    if (!conta || !(conta instanceof ContaCorrentePremium)) {
-      return null;
+    if (!(conta instanceof ContaCorrentePremium)) {
+      throw new TipoContaInvalidoException('Conta Corrente Premium', conta.constructor.name);
     }
     return conta.resgatarPontos();
   }
 
-  aplicarRendimento(numero: string): boolean {
+  aplicarRendimento(numero: string): void {
     const conta = this.getContaPorNumero(numero);
-    if (!conta || !(conta instanceof ContaPoupanca)) {
-      return false;
+    if (!(conta instanceof ContaPoupanca)) {
+      throw new TipoContaInvalidoException('Conta Poupança', conta.constructor.name);
     }
     conta.aplicarRendimento();
-    return true;
   }
 }
