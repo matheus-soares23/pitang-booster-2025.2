@@ -24,11 +24,14 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.1.7",
     "@nestjs/core": "^11.1.7",
     "@nestjs/platform-express": "^11.1.7",
+    "@types/cache-manager": "^5.0.0",
     "@types/uuid": "^11.0.0",
     "axios": "^1.13.2",
+    "cache-manager": "^7.2.5",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "uuid": "^13.0.0"

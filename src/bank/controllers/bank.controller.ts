@@ -8,7 +8,9 @@ import {
   HttpStatus,
   Put,
   Delete,
+  UseInterceptors,
 } from "@nestjs/common";
+import { CacheInterceptor } from "@nestjs/cache-manager";
 import { BankService } from "../services/bank.service";
 import { ContaBancaria } from "../entities/conta-bancaria.entity";
 
@@ -17,16 +19,19 @@ export class BankController {
   constructor(private readonly bankService: BankService) {}
 
   @Get("contas")
+  @UseInterceptors(CacheInterceptor)
   getContas(): ContaBancaria[] {
     return this.bankService.getContas();
   }
 
   @Get("contas/:numero")
+  @UseInterceptors(CacheInterceptor)
   getContaPorNumero(@Param("numero") numero: string): ContaBancaria {
     return this.bankService.getContaPorNumero(numero);
   }
 
   @Get("contas/:numero/saldo")
+  @UseInterceptors(CacheInterceptor)
   getSaldo(@Param("numero") numero: string): { saldo: number } {
     const saldo = this.bankService.getSaldo(numero);
     return { saldo };
