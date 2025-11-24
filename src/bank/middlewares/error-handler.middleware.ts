@@ -15,6 +15,7 @@ import {
   TipoContaInvalidoException,
   DadosInvalidosException,
   OperacaoNaoPermitidaException,
+  ValidationException,
 } from "../exceptions/bank.exceptions";
 
 @Catch()
@@ -47,6 +48,16 @@ export class ErrorHandlerMiddleware implements ExceptionFilter {
     error: string;
     details?: any;
   } {
+    if (exception instanceof ValidationException) {
+      const response = exception.getResponse() as any;
+      return {
+        status: exception.getStatus(),
+        message: response.message,
+        error: response.error,
+        details: response.errors,
+      };
+    }
+
     if (exception instanceof ContaJaExisteException) {
       return {
         status: exception.getStatus(),

@@ -38,14 +38,7 @@ export class BankController {
   }
 
   @Post("contas/corrente")
-  criarContaCorrente(
-    @Body()
-    body: {
-      titular: string;
-      saldoInicial?: number;
-      limiteChequeEspecial?: number;
-    }
-  ) {
+  criarContaCorrente(@Body() body: any) {
     return this.bankService.criarContaCorrente(
       body.titular,
       body.saldoInicial,
@@ -54,14 +47,7 @@ export class BankController {
   }
 
   @Post("contas/poupanca")
-  criarContaPoupanca(
-    @Body()
-    body: {
-      titular: string;
-      saldoInicial?: number;
-      taxaRendimento?: number;
-    }
-  ) {
+  criarContaPoupanca(@Body() body: any) {
     return this.bankService.criarContaPoupanca(
       body.titular,
       body.saldoInicial,
@@ -70,15 +56,7 @@ export class BankController {
   }
 
   @Post("contas/corrente-premium")
-  criarContaCorrentePremium(
-    @Body()
-    body: {
-      titular: string;
-      saldoInicial?: number;
-      limiteChequeEspecial?: number;
-      cashback?: number;
-    }
-  ) {
+  criarContaCorrentePremium(@Body() body: any) {
     return this.bankService.criarContaCorrentePremium(
       body.titular,
       body.saldoInicial,
@@ -88,13 +66,13 @@ export class BankController {
   }
 
   @Post("contas/:numero/deposito")
-  depositar(@Param("numero") numero: string, @Body() body: { valor: number }) {
+  depositar(@Param("numero") numero: string, @Body() body: any) {
     this.bankService.depositar(numero, body.valor);
     return { message: "Depósito realizado com sucesso" };
   }
 
   @Post("contas/:numero/saque")
-  sacar(@Param("numero") numero: string, @Body() body: { valor: number }) {
+  sacar(@Param("numero") numero: string, @Body() body: any) {
     this.bankService.sacar(numero, body.valor);
     return { message: "Saque realizado com sucesso" };
   }
@@ -102,7 +80,7 @@ export class BankController {
   @Put("contas/:numero/corrente")
   atualizarContaCorrente(
     @Param("numero") numero: string,
-    @Body() body: { titular?: string; limiteChequeEspecial?: number }
+    @Body() body: any
   ) {
     this.bankService.atualizarContaCorrente(numero, body);
     return { message: "Conta corrente atualizada com sucesso" };
@@ -111,7 +89,7 @@ export class BankController {
   @Put("contas/:numero/poupanca")
   atualizarContaPoupanca(
     @Param("numero") numero: string,
-    @Body() body: { titular?: string; taxaRendimento?: number }
+    @Body() body: any
   ) {
     this.bankService.atualizarContaPoupanca(numero, body);
     return { message: "Conta poupança atualizada com sucesso" };
@@ -120,12 +98,7 @@ export class BankController {
   @Put("contas/:numero/corrente-premium")
   atualizarContaCorrentePremium(
     @Param("numero") numero: string,
-    @Body()
-    body: {
-      titular?: string;
-      limiteChequeEspecial?: number;
-      cashback?: number;
-    }
+    @Body() body: any
   ) {
     this.bankService.atualizarContaCorrentePremium(numero, body);
     return { message: "Conta corrente premium atualizada com sucesso" };
